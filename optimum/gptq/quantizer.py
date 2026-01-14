@@ -62,10 +62,6 @@ def has_device_more_than_cpu():
 
 
 def infer_single_device_map_fallback(model):
-    """
-    Infer a HF-like device_map for models that do NOT expose `hf_device_map`.
-    """
-
     param = next(model.parameters())
     device = param.device
 
