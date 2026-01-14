@@ -65,13 +65,7 @@ def infer_single_device_map_fallback(model):
     param = next(model.parameters())
     device = param.device
 
-    if device.type == "cuda":
-        return {"": device.index}
-    elif device.type == "cpu":
-        return {"": "cpu"}
-    else:
-        # For completeness (e.g. xpu, mps, etc.)
-        return {"": str(device)}
+    return {"": device.index or device.type}
 
 
 class GPTQQuantizer(object):
