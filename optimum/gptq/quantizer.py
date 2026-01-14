@@ -14,7 +14,6 @@
 # limitations under the License.
 import json
 import os
-from collections import defaultdict
 from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -60,7 +59,6 @@ logger = getLogger(__name__)
 
 def has_device_more_than_cpu():
     return torch.cuda.is_available() or (hasattr(torch, "xpu") and torch.xpu.is_available())
-
 
 
 def infer_single_device_map_fallback(model):
