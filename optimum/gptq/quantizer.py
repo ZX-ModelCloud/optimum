@@ -14,6 +14,7 @@
 # limitations under the License.
 import json
 import os
+from collections import defaultdict
 from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -59,6 +60,24 @@ logger = getLogger(__name__)
 
 def has_device_more_than_cpu():
     return torch.cuda.is_available() or (hasattr(torch, "xpu") and torch.xpu.is_available())
+
+
+
+def infer_single_device_map_fallback(model):
+    """
+    Infer a HF-like device_map for models that do NOT expose `hf_device_map`.
+    """
+
+    param = next(model.parameters())
+    device = param.device
+
+    if device.type == "cuda":
+        return {"": device.index}
+    elif device.type == "cpu":
+        return {"": "cpu"}
+    else:
+        # For completeness (e.g. xpu, mps, etc.)
+        return {"": str(device)}
 
 
 class GPTQQuantizer(object):
@@ -691,7 +710,13 @@ class GPTQQuantizer(object):
         layers = get_layers(model)
         layers = {n: layers[n] for n in quantizers}
 
-        self.select_quant_linear(device_map=model.hf_device_map, pack=True)
+        if hasattr(model, "hf_device_map"):
+            device_map = model.hf_device_map
+        else:
+            # Transformers: skip accelerate hooks when device_map resolves to a single device
+            device_map = infer_single_device_map_fallback(model)
+
+        self.select_quant_linear(device_map=device_map, pack=True)
 
         self._replace_by_quant_layers(model, quantizers)
         qlayers = get_layers(model, [self.quant_linear])
