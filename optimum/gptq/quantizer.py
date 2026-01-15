@@ -63,9 +63,7 @@ def has_device_more_than_cpu():
 
 def infer_single_device_map_fallback(model):
     param = next(model.parameters())
-    device = param.device
-
-    return {"": device.index or device.type}
+    return {"": param.device}
 
 
 class GPTQQuantizer(object):
