@@ -61,11 +61,6 @@ def has_device_more_than_cpu():
     return torch.cuda.is_available() or (hasattr(torch, "xpu") and torch.xpu.is_available())
 
 
-def infer_single_device_map_fallback(model):
-    param = next(model.parameters())
-    return {"": param.device}
-
-
 class GPTQQuantizer(object):
     r"""
     A simple API for GPTQ Quantization
@@ -700,7 +695,7 @@ class GPTQQuantizer(object):
             device_map = model.hf_device_map
         else:
             # Transformers: skip accelerate hooks when device_map resolves to a single device
-            device_map = infer_single_device_map_fallback(model)
+            device_map = {"": next(model.parameters())}
 
         self.select_quant_linear(device_map=device_map, pack=True)
 
