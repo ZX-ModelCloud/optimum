@@ -695,7 +695,7 @@ class GPTQQuantizer(object):
             device_map = model.hf_device_map
         else:
             # Transformers: skip accelerate hooks when device_map resolves to a single device
-            device_map = {"": next(model.parameters())}
+            device_map = {"": next(model.parameters()).device}
 
         self.select_quant_linear(device_map=device_map, pack=True)
 
